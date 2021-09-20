@@ -1,0 +1,12 @@
+[submodule "src/Contracts/IRSI.Polling.Contracts"]
+	path = src/Contracts/IRSI.Polling.Contracts
+	url = git@github.com:IrsiPR/IRSI.Polling.Contracts.git
+[submodule "src/Contracts/IRSI.Payroll.Contracts"]
+	path = src/Contracts/IRSI.Payroll.Contracts
+	url = git@github.com:IrsiPR/IRSI.Payroll.Contracts.git
+[submodule "src/Contracts/IRSI.Paytronix.Contracts"]
+	path = src/Contracts/IRSI.Paytronix.Contracts
+	url = git@github.com:IrsiPR/IRSI.Paytronix.Contracts.git
+[submodule "src/Contracts/IRSI.AutoUpdate.Contracts"]
+	path = src/Contracts/IRSI.AutoUpdate.Contracts
+	url = git@github.com:IrsiPR/IRSI.AutoUpdate.Contracts.git
