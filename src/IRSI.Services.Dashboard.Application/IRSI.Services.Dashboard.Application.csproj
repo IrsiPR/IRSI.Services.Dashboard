@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Contracts\IRSI.AutoUpdate.Contracts\IRSI.AutoUpdate.Contracts.csproj" />
     <ProjectReference Include="..\Contracts\IRSI.Polling.Contracts\IRSI.Polling.Contracts.csproj" />
   </ItemGroup>
 

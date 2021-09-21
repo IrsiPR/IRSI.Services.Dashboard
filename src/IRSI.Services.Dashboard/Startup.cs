@@ -1,10 +1,12 @@
 using System.Collections.ObjectModel;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentValidation.AspNetCore;
 using IRSI.Services.Dashboard.Application;
 using IRSI.Services.Dashboard.Application.Common.Interfaces;
 using IRSI.Services.Dashboard.Application.Common.Options;
 using IRSI.Services.Dashboard.Filters;
+using IRSI.Services.Dashboard.Notifications;
 using IRSI.Services.Dashboard.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -14,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.SignalR;
 
 namespace IRSI.Services.Dashboard
 {
@@ -29,9 +32,12 @@ namespace IRSI.Services.Dashboard
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors();
+
             services.AddControllersWithViews(options => { options.Filters.Add<ApiExceptionFilterAttribute>(); })
                 .AddJsonOptions(options =>
                 {
+                    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
                     options.JsonSerializerOptions.IgnoreNullValues = true;
                 })
@@ -42,6 +48,14 @@ namespace IRSI.Services.Dashboard
             services.AddHttpContextAccessor();
 
             services.AddSingleton<ICurrentUserService, CurrentUserService>();
+            services.AddSingleton<IUserIdProvider, UserIdProvider>();
+
+            services.AddSignalR().AddJsonProtocol(options =>
+            {
+                options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                options.PayloadSerializerOptions.IgnoreNullValues = true;
+            });
 
             services.AddSwaggerGen(c =>
             {
@@ -51,7 +65,6 @@ namespace IRSI.Services.Dashboard
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/build"; });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -63,9 +76,14 @@ namespace IRSI.Services.Dashboard
             else
             {
                 app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseCors(builder => builder
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+            );
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
@@ -75,6 +93,7 @@ namespace IRSI.Services.Dashboard
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHub<NotificationsHub>("/notifications");
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
